@@ -1,0 +1,14 @@
+{
+	"input" : [
+		{ "item" : "network_grabber2", "count" : 1 },
+		{ "item" : "ironbar", "count" : 2 },
+		{ "item" : "glass", "count" : 1 },
+		{ "item" : "durasteelbar", "count" : 4 },
+		{ "item" : "copperbar", "count" : 1 }
+	],
+	"output" : {
+		"item" : "network_grabber3",
+		"count" : 1
+	},
+        "groups" : [ "craftingwiring", "mechanics", "all"]
+}

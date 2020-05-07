@@ -1,0 +1,11 @@
+{
+	"input" : [
+		{ "item" : "copperbar", "count" : 1 },
+		{ "item" : "ironbar", "count" : 5 }
+	],
+	"output" : {
+		"item" : "network_dropper",
+		"count" : 1
+	},
+        "groups" : [ "craftingwiring", "mechanics", "all" ]
+}

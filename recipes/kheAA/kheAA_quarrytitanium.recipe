@@ -1,0 +1,13 @@
+{
+	"input" : [
+		{ "item" : "titaniumbar", "count" : 6 },
+		{ "item" : "ironbar", "count" : 1 },
+		{ "item" : "copperbar", "count" : 1 },
+		{ "item" : "network_quarryiron", "count" : 1 }
+	],
+	"output" : {
+		"item" : "network_quarrytitanium",
+		"count" : 1
+	},
+        "groups" : [ "craftingwiring", "mechanics", "all" ]
+}

@@ -1,0 +1,13 @@
+{
+	"input" : [
+		{ "item" : "siliconboard", "count" : 1 },
+		{ "item" : "glass", "count" : 1 },
+		{ "item" : "ironbar", "count" : 2 },
+		{ "item" : "copperbar", "count" : 7 }
+	],
+	"output" : {
+		"item" : "network_pump",
+		"count" : 1
+	},
+        "groups" : [ "craftingwiring", "mechanics", "all" ]
+}
