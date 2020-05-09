@@ -8,6 +8,9 @@ Credits:
 
 change log:
 ---
+1.82
+*added throttle control as anti-lag
+--
 1.81
 *added point sensor unlocked from bridge
 --
