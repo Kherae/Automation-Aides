@@ -8,8 +8,11 @@ Credits:
 
 change log:
 ---
+1.81
+*added point sensor unlocked from bridge
+--
 1.8
-*added item sensor and item dropper
+*added item sensor and item dropper, unlocked from silicon board and iron bar
 --
 1.77
 *fix pump code
