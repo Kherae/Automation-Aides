@@ -6,11 +6,11 @@ transferUtil.itemTypes = nil
 
 --[[
 function update(dt)
-	if not deltaTime or (deltaTime > 1) then
-		deltaTime=0
+	if not transferUtilDeltaTime or (transferUtilDeltaTime > 1) then
+		transferUtilDeltaTime=0
 		transferUtil.loadSelfContainer()
 	else
-		deltaTime=deltaTime+dt
+		transferUtilDeltaTime=transferUtilDeltaTime+dt
 	end
 end
 ]]
@@ -24,7 +24,7 @@ function transferUtil.init()
 	end
 	storage.disabled=(entity.entityType() ~= "object")
 	if storage.disabled then
-		sb.logInfo("transferUtil automation functions are disabled on non-objects (current is \"%s\") for safety reasons.",entityType.entityType())
+		sb.logInfo("transferUtil automation functions are disabled on non-objects (current is \"%s\") for safety reasons.",entity.entityType())
 		return
 	end
 	storage.position=storage.position or entity.position()
@@ -259,11 +259,11 @@ function transferUtil.recvConfig(conf)
 end
 
 function transferUtil.sendContainerInputs()
-	return transferUtil.vars.inContainers
+	return transferUtil and transferUtil.vars and transferUtil.vars.inContainers or {}
 end
 
 function transferUtil.sendContainerOutputs()
-	return transferUtil.vars.outContainers
+	return transferUtil and transferUtil.vars and transferUtil.vars.outContainers or {}
 end
 
 function transferUtil.powerLevel(node,explicit)

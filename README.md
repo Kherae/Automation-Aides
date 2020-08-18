@@ -8,6 +8,9 @@ Credits:
 
 change log:
 ---
+1.84
+*fixed a race condition issue
+--
 1.82
 *added throttle control as anti-lag
 --
