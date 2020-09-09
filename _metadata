@@ -3,8 +3,8 @@
   "description" : "An automation mod inspired by (and partially derived from) steambound reloaded and vesselbound.\nFor those who've used steambound, you know the flaws with the routers. They reset often. If you've used vesselbound, you might remember how it removes everything, does stuff, then puts it back if it fails. I know I remember these problems. I liked a lot of parts of the mods, however. Steambound's pump and quarry, and the router (when it works), and vesselbound being wired.\nSo I made this mod. It works pretty good now.\n\nIncompatibilities:\nfrackin universe. It's already included.\n\nFor the change log and credits: check the readme. Steam's change log will only rarely be updated.\n\nGuide by  Orange: https://steamcommunity.com/sharedfiles/filedetails/?id=1618972523\n\nGithub: https://github.com/Kherae/Automation-Aides/",
   "friendlyName" : "Automation Aides",
   "link" : "steam://url/CommunityFilePage/854844222",
-  "name" : "AutomationAide",
+  "name" : "AutomationAides",
   "steamContentId" : "854844222",
   "tags" : "Furniture and Objects",
-  "version" : "1.8.5"
+  "version" : "1.8.6"
 }
