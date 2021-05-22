@@ -5,8 +5,12 @@ Credits:
 *cratesmith, for vesselbound, another source of ideas.
 *thegamemaster1234 (Lucca) for some shiny code contributions (round robin, even split, and moving in multiples)
 *hubnester for massively boosting terminal performance. Terminal limit is now around 13k items instead of just 1k.
+*sayter for router UI graphical update
 
 change log:
+---
+1.8.11
+*router UI update by sayter
 ---
 1.84
 *fixed a race condition issue
