@@ -4,12 +4,13 @@
 	"printable" : false,
 	"rarity" : "Common",
 	"description" : "Basic Grabber. Grabs items from the world. Range: 4.
-^blue;Input: ^white;power switch^reset;
+^blue;Input: ^white;On/Off Switch^reset;
 ^red;Output: ^white;item network^reset;",
 	"shortdescription" : "Grabber v1",
 	"objectType" : "container",
 	"tooltipKind" : "container",
 	"race" : "generic",
+
 	"learnBlueprintsOnPickup":["network_grabber2"],
 	"category" : "wire",
 	"price" : 15,

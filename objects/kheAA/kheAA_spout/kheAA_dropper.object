@@ -3,9 +3,8 @@
 	"colonyTags" : ["wired"],
 	"printable" : false,
 	"rarity" : "Common",
-	"description" : "Pours Liquids into the world.
-^blue;Input^white;1^blue;: ^white;power switch
-^blue;Input^white;2^blue;: ^white;item network^reset;",
+	"description" : "Drops Items into the world.
+^blue;Input^white;1^blue;: ^white;On/Off Switch",
 	"shortdescription" : "Item Dropper",
 	"objectType" : "container",
 	"tooltipKind" : "container",
