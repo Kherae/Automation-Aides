@@ -10,6 +10,9 @@ Credits:
 
 change log:
 ---
+1.9.2
+*Added help mode button
+---
 1.9
 *routers now have 2 new filter options
 *object descriptions updated
