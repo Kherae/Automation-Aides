@@ -10,6 +10,9 @@ reDrillLevelFore=0
 redrillPosFore=nil
 reDrillLevelback=0
 redrillPosBack=nil
+--redrill: two damage instances. one at target, one in T from target. damage = <stats>*mult/max. max: cap for a counter incremented by 1 per redrill attempt.
+redrillMax=6
+redrillMult=1.0
 step=0
 time = 0
 --[[
@@ -23,9 +26,9 @@ node list:
 ]]
 
 function excavatorCommon.init()
-	local buffer=""
 	transferUtil.loadSelfContainer()
-	if storage.disabled then
+	if self.disabled then
+		storage.state="disabled"
 		sb.logInfo("excavatorCommon disabled on non-objects (current is \"%s\") for safety reasons.",entityType.entityType())
 		return
 	end
@@ -35,38 +38,38 @@ function excavatorCommon.init()
 	excavatorCommon.vars.isDrill=config.getParameter("kheAA_isDrill",false)
 	excavatorCommon.vars.isPump=config.getParameter("kheAA_isPump",false)
 	excavatorCommon.vars.isVacuum=config.getParameter("kheAA_isVacuum",false)
-	
-	buffer=config.getParameter("kheAA_excavatorRate")
+
+	local buffer=config.getParameter("kheAA_excavatorRate")
 	excavatorCommon.vars.excavatorRate=((type(buffer)=="number" and buffer > 0.0) and buffer) or 1.0
-	
+
 	step=(step or -0.2)
 
 	if excavatorCommon.vars.isDrill == true or excavatorCommon.vars.isPump == true then
 		excavatorCommon.vars.maxDepth=config.getParameter("kheAA_maxDepth",8)
 	end
-	
+
 	if excavatorCommon.vars.isPump then
 		require "/scripts/kheAA/liquidLib.lua"
 		excavatorCommon.vars.pumpHPNode=config.getParameter("kheAA_powerPumpNode")
 		excavatorCommon.vars.spoutNode=config.getParameter("kheAA_spoutNode")
 		storage.depth=0 -- rather have it X=X or 0, but that causes problems when the pumps reinit in a partially loaded chunk they start ignoring floors.
-		storage.pumpThrottler=storage.pumpThrottler or 0
-		excavatorCommon.vars.throttleInfinite=excavatorCommon.vars.throttleInfinite or false
+		--storage.pumpThrottler=storage.pumpThrottler or 0
+		--excavatorCommon.vars.throttleInfinite=excavatorCommon.vars.throttleInfinite or false
 		liquidLib.init()
 	end
-	
+
 	if excavatorCommon.vars.isDrill then
 		excavatorCommon.vars.drillPower=config.getParameter("kheAA_drillPower",8)
 		excavatorCommon.vars.drillHPNode=config.getParameter("kheAA_powerDrillNode")
 		excavatorCommon.vars.maxWidth = config.getParameter("kheAA_maxWidth",8)
 		storage.width=storage.width or 0
 	end
-	
+
 	if excavatorCommon.vars.isVacuum then
 		excavatorCommon.vars.vacuumRange=config.getParameter("kheAA_vacuumRange",4)
 		excavatorCommon.vars.vacuumDelay=config.getParameter("kheAA_vacuumDelay",0)--in seconds
 	end
-	
+
 	if excavatorCommon.vars.isDrill or excavatorCommon.vars.isPump or excavatorCommon.vars.isVacuum then
 		storage.state=storage.state or "start"
 		anims()
@@ -76,7 +79,7 @@ function excavatorCommon.init()
 end
 
 function excavatorCommon.cycle(dt)
-	if storage.disabled then return end
+	if self.disabled then return end
 	if not excavatorCommon.loadSelfTimer or excavatorCommon.loadSelfTimer > 1.0 then
 		transferUtil.loadSelfContainer()
 		if excavatorCommon.vars.isPump then
@@ -86,7 +89,7 @@ function excavatorCommon.cycle(dt)
 	else
 		excavatorCommon.loadSelfTimer=excavatorCommon.loadSelfTimer+dt
 	end
-	
+
 	if storage.state=="off" or not transferUtil.powerLevel(transferUtil.vars.logicNode) then
 		setRunning(false)
 		excavatorCommon.mainDelta=0
@@ -98,9 +101,14 @@ function excavatorCommon.cycle(dt)
 			return
 		end
 	end
-	
-	setRunning(true)
+
 	excavatorCommon.mainDelta = (excavatorCommon.mainDelta or 100) + dt--DO NOT INCREMENT ELSEWHERE
+	if not storage.state then
+		excavatorCommon.init()
+		return
+	end
+	if storage.state=="disabled" then return end
+	setRunning(true)
 	time = (time or (dt*-1)) + dt
 	if time > 10 then
 		local pos = storage.position
@@ -117,6 +125,10 @@ function excavatorCommon.cycle(dt)
 		time=0
 	end
 	states[storage.state](dt)
+end
+
+function states.disabled(dt)
+	return
 end
 
 function states.start(dt)
@@ -148,7 +160,7 @@ function states.vacuum(dt)
 end
 
 function states.moveDrillBar(dt)
-	if (excavatorCommon.mainDelta * excavatorCommon.vars.excavatorRate) >= 0.2 then
+	if (excavatorCommon.mainDelta * excavatorCommon.vars.excavatorRate * 2.0) >= 0.2 then
 		step = step + 0.2
 		excavatorCommon.mainDelta=0
 	end
@@ -172,7 +184,7 @@ function states.moveDrillBar(dt)
 			setRunning(false)
 		end
 	end
-	
+
 end
 
 function states.moveDrill(dt)
@@ -199,8 +211,6 @@ function states.moveDrill(dt)
 	end
 end
 
-
-
 function states.movePump(dt)
 	if (excavatorCommon.mainDelta * excavatorCommon.vars.excavatorRate) >= 0.2 then
 		step = step + 0.2
@@ -222,9 +232,9 @@ function excavatorCommon.grab(grabPos)
 	if not grabPos then
 		return
 	end
-	
-	if not entity.entityType() == "object" then
-		sb.logInfo("excavatorCommon.grab: Cannot run on non-object (id: %s). Stop trying to do so.",entity.id())
+
+	if entity.entityType() ~= "object" then
+		--sb.logInfo("excavatorCommon.grab: Cannot run on non-object (id: %s). Stop trying to do so.",entity.id())
 		return
 	end
 	if not excavatorCommon.vars.vacuumRange then
@@ -240,6 +250,7 @@ function excavatorCommon.grab(grabPos)
 		--if entity.entityInSight(drops[i])
 		local item = world.takeItemDrop(id)
 		if item~=nil then
+			-- luacheck: ignore 211
 			local result,countSent,dropped=transferUtil.throwItemsAt(transferUtil.vars.containerId,transferUtil.vars.inContainers[transferUtil.vars.containerId],item,true)
 			--sb.logInfo("result: %s, countSent: %s, dropped: %s",result,countSent,dropped)
 			if dropped then--throttle control. no effect if no vac delay (such as on quarries and pumps)
@@ -253,7 +264,7 @@ end
 	if entity.entityType()~="object" then
 		sb.logInfo("excavatorCommon.vacuumSafetyCheck: vacuum code disabled for nonobjects.")
 		return false
-	end--idiotproofing	
+	end--idiotproofing
 	if not excavatorCommon.vars.vacuumRange then
 		if not missingRangeCheck then
 			sb.logInfo("Uh-oh, an object at %s is missing vacuum range!",entity.position())
@@ -280,22 +291,12 @@ function states.mine(dt)
 	end
 	excavatorCommon.mainDelta = 0
 	if redrillPosFore then
-		if reDrillLevelFore == 1 then
+		if reDrillLevelFore > 0 then
 			if world.material(redrillPosFore,"foreground") then
-				world.damageTileArea(redrillPosFore,1.25, "foreground", redrillPosFore, "plantish", excavatorCommon.vars.drillPower/3)
-				reDrillLevelFore=2
-				if excavatorCommon.vars.isVacuum then
-					excavatorCommon.grab(redrillPosFore)
-				end
-				return
-			else
-				reDrillLevelFore=0
-				redrillPosFore=nil
-			end
-		elseif reDrillLevelFore == 2 then
-			if world.material(redrillPosFore,"foreground") then
-				world.damageTileArea(redrillPosFore,1.25, "foreground", redrillPosFore, "plantish", excavatorCommon.vars.drillPower/3)
-				reDrillLevelFore=0
+				local damage=redrillMult*excavatorCommon.vars.drillPower*math.max(reDrillLevelFore,1)/redrillMax
+				world.damageTiles({vec2.add(redrillPosFore,{-1,0}),vec2.add(redrillPosFore,{1,0}),vec2.add(redrillPosFore,{0,-1}),redrillPosFore}, "foreground", redrillPosFore, "plantish",damage)
+				world.damageTiles({redrillPosFore}, "foreground", redrillPosFore, "plantish",damage)
+				reDrillLevelFore=math.min(reDrillLevelFore+1,redrillMax)
 				if excavatorCommon.vars.isVacuum then
 					excavatorCommon.grab(redrillPosFore)
 				end
@@ -307,22 +308,12 @@ function states.mine(dt)
 		end
 	end
 	if redrillPosBack then
-		if reDrillLevelBack == 1 then
+		if reDrillLevelBack > 0 then
 			if world.material(redrillPosBack,"background") then
-				world.damageTileArea(redrillPosBack,1.25, "background", redrillPosBack, "plantish", excavatorCommon.vars.drillPower/3)
-				reDrillLevelBack=2
-				if excavatorCommon.vars.isVacuum then
-					excavatorCommon.grab(redrillPosBack)
-				end
-				return
-			else
-				reDrillLevelBack=0
-				redrillPosBack=nil
-			end
-		elseif reDrillLevelBack == 2 then
-			if world.material(redrillPosBack,"background") then
-				world.damageTileArea(redrillPosBack,1.25, "background", redrillPosBack, "plantish", excavatorCommon.vars.drillPower/3)
-				reDrillLevelBack=0
+				local damage=redrillMult*excavatorCommon.vars.drillPower*math.max(reDrillLevelBack,1)/redrillMax
+				world.damageTiles({vec2.add(redrillPosBack,{-1,0}),vec2.add(redrillPosBack,{1,0}),vec2.add(redrillPosBack,{0,-1}),redrillPosBack}, "background", redrillPosBack, "plantish",damage)
+				world.damageTiles({redrillPosBack}, "background", redrillPosBack, "plantish",damage)
+				reDrillLevelBack=math.min(reDrillLevelBack+1,redrillMax)
 				if excavatorCommon.vars.isVacuum then
 					excavatorCommon.grab(redrillPosBack)
 				end
@@ -333,7 +324,7 @@ function states.mine(dt)
 			end
 		end
 	end
-	
+
 	if storage.drillPos[2] < (-1 * excavatorCommon.vars.maxDepth) then
 		--sb.logInfo(".p %s, .mD %s",storage.position,excavatorCommon.vars.maxDepth)
 		drillReset()
@@ -346,14 +337,21 @@ function states.mine(dt)
 	if world.material(absdrillPos,"foreground") then
 		world.damageTiles({absdrillPos}, "foreground", absdrillPos, "plantish", excavatorCommon.vars.drillPower)
 		if world.material(absdrillPos,"foreground") then
-			local weeds=world.entityQuery({absdrillPos[1]-20,absdrillPos[2]-20},{absdrillPos[1]+20,absdrillPos[2]+20})
-			if weeds~=nil then
-				for k,v in pairs(weeds) do
+			local weeds=world.objectQuery({absdrillPos[1]-1,absdrillPos[2]-1},{absdrillPos[1]+1,absdrillPos[2]+1})
+			if weeds then
+				local cut=false
+				for _,v in pairs(weeds) do
 					if world.entityExists(v) then
+						cut=true
+						break
 					end
 				end
+				if cut then
+					reDrillLevelFore=0.1
+				else
+					reDrillLevelFore=1
+				end
 				redrillPosFore=absdrillPos
-				reDrillLevelFore=1
 				return
 			end
 		end
@@ -377,41 +375,40 @@ function states.mine(dt)
 			excavatorCommon.grab(absdrillPos)
 		end
 	end
-	
+
 end
 
 function states.pump(dt)
 	if (excavatorCommon.mainDelta * excavatorCommon.vars.excavatorRate) < 0.2 then
 		return
 	end
-	
-	local tempDelta=excavatorCommon.mainDelta
+
+	--local tempDelta=excavatorCommon.mainDelta
 	excavatorCommon.mainDelta = 0
-	
-	
-	storage.pumpThrottler=math.max(storage.pumpThrottler-(tempDelta*excavatorCommon.vars.excavatorRate*2),0)
+
+	--storage.pumpThrottler=math.max(storage.pumpThrottler-(tempDelta*excavatorCommon.vars.excavatorRate*2),0)
 	if not storage.box then
 		storage.state="start"
 		return
 	end
 	local pos = excavatorCommon.combineWrap({{excavatorCommon.vars.facing, storage.depth},storage.position,{excavatorCommon.vars.facing==-1 and storage.box.xMax or 0,0}})
 	local liquid = world.forceDestroyLiquid(pos)
-	
+
 	if liquid then
-		storage.pumpThrottler=storage.pumpThrottler+liquid[2]
+		--[[storage.pumpThrottler=storage.pumpThrottler+liquid[2]
 		if world.liquidAt(pos) then
 			excavatorCommon.vars.throttleInfinite=true
 		else
 			excavatorCommon.vars.throttleInfinite=false
-		end
+		end]]
 		if storage.liquids[liquid[1]] == nil then
 			storage.liquids[liquid[1]] = 0
 		end
 		storage.liquids[liquid[1]] = storage.liquids[liquid[1]] + liquid[2]
 	else
-		excavatorCommon.vars.throttleInfinite=false
+		--excavatorCommon.vars.throttleInfinite=false
 	end
-	
+
 	if not transferUtil.powerLevel(excavatorCommon.vars.pumpHPNode,true) then
 		for k,v in pairs(storage.liquids) do
 			if v >= 1 then
@@ -424,7 +421,7 @@ function states.pump(dt)
 						break
 					end
 				else
-					if util.tableSize(excavatorCommon.vars.liquidOuts)>0 then
+					if util.tableSize(excavatorCommon.vars.liquidOuts or {})>0 then
 						local outputPipe=transferUtil.findNearest(entity.id(),entity.position(),excavatorCommon.vars.liquidOuts)
 						if world.entityExists(outputPipe) then
 							world.callScriptedEntity(outputPipe,"liquidLib.receiveLiquid",{k,1})
@@ -470,12 +467,12 @@ function states.pump(dt)
 
 		end]]
 	end
-	
-	if excavatorCommon.vars.throttleInfinite or (storage.pumpThrottler > (tempDelta * 10 * excavatorCommon.vars.excavatorRate)) then
+
+	--[[if excavatorCommon.vars.throttleInfinite or (storage.pumpThrottler > (tempDelta * 10 * excavatorCommon.vars.excavatorRate)) then
 		storage.state="pumpStutter"
 		return
-	end
-	
+	end]]
+
 	if (storage.depth*-1) > excavatorCommon.vars.maxDepth then
 		setRunning(false)
 		if excavatorCommon.vars.isDrill then
@@ -495,7 +492,7 @@ function states.pump(dt)
 	end
 end
 
-function states.pumpStutter(dt)
+--[[function states.pumpStutter(dt)
 	if (excavatorCommon.mainDelta * excavatorCommon.vars.excavatorRate) < 0.2 then
 		return
 	end
@@ -507,22 +504,21 @@ function states.pumpStutter(dt)
 	if storage.pumpThrottler > excavatorCommon.vars.excavatorRate then
 		return
 	end
-	
+
 	excavatorCommon.mainDelta = 0
 	storage.state="pump"
-end
+end]]
 
 function states.stop()
 	-- body
 end
-
 
 function excavatorCommon.getNextDrillTarget()
 	local pos = storage.position
 	local target = {storage.drillPos[1], storage.drillPos[2]}
 	if excavatorCommon.vars.direction == 1 and target[1] >= storage.width + 1 then
 		excavatorCommon.vars.direction = -1
-		target[2] = target[2] - 1	 
+		target[2] = target[2] - 1
 	elseif excavatorCommon.vars.direction == -1 and target[1] <= 2 then
 		excavatorCommon.vars.direction = 1
 		target[2] = target[2] - 1
@@ -532,7 +528,7 @@ function excavatorCommon.getNextDrillTarget()
 	if pos[2] + target[2] <= 1 then
 		storage.state = "stop"
 	end
-	
+
 	storage.drillDir = excavatorCommon.getDir()
 	--world.loadRegion({ target[1]-4, target[2]-4, target[1]+4, target[2]+4 })
 	return target
@@ -562,7 +558,6 @@ function anims()
 		animWarn=true
 	end
 end
-
 
 function excavatorCommon.combineWrap(argList)
 	local buffer={0,0}
