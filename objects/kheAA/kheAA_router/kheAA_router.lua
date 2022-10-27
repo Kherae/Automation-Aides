@@ -122,14 +122,13 @@ function routeItems(dt)
 		if sourceItems then
 			for indexIn,item in pairs(sourceItems or {}) do
 				if not storage.leaveOne or item.count > 1 then
-					if storage.leaveOne then 
+					if storage.leaveOne then
 						item.count = item.count - 1
 					end
 					local pass,mod = checkFilter(item)
 					if pass and (not storage.roundRobin or item.count>=(mod*outputSizeG)) then
 						local outputSlotCountG = util.tableSize(storage.outputSlots)
 						local originalCount=item.count
-						local canRobinRoundSlots
 						if storage.roundRobin then
 							local buffer
 							buffer=math.floor(item.count/outputSizeG)
@@ -150,9 +149,7 @@ function routeItems(dt)
 							end
 							if targetAwake == true and sourceAwake == true then
 								local containerSize=world.containerSize(targetContainer)
-								local outputSlotCount=outputSlotCountG
 								local outputSlotsBuffer={}
-
 
 								for _,v in pairs(storage.outputSlots) do
 									if v <= containerSize then
@@ -160,8 +157,7 @@ function routeItems(dt)
 									end
 								end
 
-								outputSlotCount=util.tableSize(outputSlotsBuffer)
-
+								local outputSlotCount=util.tableSize(outputSlotsBuffer)
 
 								local subCount=item.count
 								if storage.roundRobinSlots and storage.invertSlots[2] then
@@ -172,7 +168,7 @@ function routeItems(dt)
 									item.count = math.floor(buffer)
 								end
 
-								if validInputSlot(indexIn) then
+								if ((#storage.outputSlots==0) or (#outputSlotsBuffer>0)) and validInputSlot(indexIn) then
 									if outputSlotCount > 0 or storage.onlyStack then
 										local buffer=item.count * (storage.roundRobin and outputSize or 1) * (storage.roundRobinSlots and outputSlotCount or 1)
 										if item.count>0 and buffer<=originalCount then
@@ -185,8 +181,11 @@ function routeItems(dt)
 													else
 														local leftOverItems=world.containerPutItemsAt(targetContainer,item,indexOut-1)
 														if leftOverItems then
-															world.containerTakeNumItemsAt(sourceContainer,indexIn-1,item.count-leftOverItems.count)
-															originalCount=originalCount-(item.count-leftOverItems.count)
+															local leftCount=item.count-leftOverItems.count
+															if leftCount>0 then
+																world.containerTakeNumItemsAt(sourceContainer,indexIn-1,leftCount)
+																originalCount=originalCount-leftCount
+															end
 															if not storage.roundRobinSlots then
 																if not storage.roundRobin then
 																	item = leftOverItems
@@ -265,8 +264,6 @@ function checkFilter(item)
 				result = true
 			elseif fType == 1 and transferUtil.compareCategories(rItem, item) then
 				result = true
-			else
-				result = false
 			end
 			if storage.filterInverted[slot] then
 				result = not result

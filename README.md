@@ -10,6 +10,12 @@ Credits:
 
 change log:
 ---
+1.9.4
+*correct output filtration logic in case of output list consisting solely of values outside a destination container's range
+---
+1.9.3
+*correcting a typo and adjusting a string's location for localization
+---
 1.9.2
 *Added help mode button
 ---
