@@ -10,6 +10,12 @@ Credits:
 
 change log:
 ---
+1.9.5
+*removed repeating from ITDs.
+*removed looping from repeaters
+*added warning alarm and sprite color state to repeaters
+*extended some tooltips
+---
 1.9.4
 *correct output filtration logic in case of output list consisting solely of values outside a destination container's range
 ---
