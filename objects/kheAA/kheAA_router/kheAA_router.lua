@@ -34,9 +34,10 @@ function update(dt)
 	end
 	deltatime = 0
 	self.routerItems=world.containerItems(entity.id())
-	transferUtil.updateInputs()
-	transferUtil.updateOutputs()
+	-- local nodeUpdatePassed=transferUtil.updateNodeLists()
+	transferUtil.updateNodeLists()
 
+	-- if (not nodeUpdatePassed) and transferUtil.powerLevel(transferUtil.vars.logicNode) then
 	if transferUtil.powerLevel(transferUtil.vars.logicNode) then
 		backflowInstances=0
 		routeItems(dt)
@@ -61,6 +62,8 @@ end
 
 function initVars()
 	self.routerItems={}
+	transferUtil.vars.isRouter=true
+	-- transferUtil.vars.isRelayNode=true
 	transferUtil.vars.inContainers={}
 	transferUtil.vars.outContainers={}
 	if storage.inputSlots == nil then
