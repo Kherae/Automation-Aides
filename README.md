@@ -10,6 +10,10 @@ Credits:
 
 change log:
 ---
+1.9.6
+*implemented caching system in liquidlib and transferutil scripts.
+*transferutil now enforces item stack caps in throwItemsAt function.
+---
 1.9.5
 *removed repeating from ITDs.
 *removed looping from repeaters
