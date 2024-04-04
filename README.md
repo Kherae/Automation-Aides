@@ -10,6 +10,9 @@ Credits:
 
 change log:
 ---
+1.9.6.1
+*liquid lib serialization fix
+---
 1.9.6
 *implemented caching system in liquidlib and transferutil scripts.
 *transferutil now enforces item stack caps in throwItemsAt function.
