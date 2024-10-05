@@ -10,5 +10,5 @@
 		"item" : "network_grabber3",
 		"count" : 1
 	},
-        "groups" : [ "craftingwiring", "mechanics", "all"]
+	"groups" : [ "craftingwiring", "mechanics", "all"]
 }
